@@ -111,7 +111,26 @@ class BookListCreateView(generics.ListCreateAPIView):
 class AuthorRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Author.objects.all()
     serializer_class = AuthorSerializer
+    def post(self, request):
+        # Deserialize the JSON data into an AuthorSerializer
+        serializer = AuthorSerializer(data=request.data)
+        if serializer.is_valid():
+            # Create the Author instance
+            author = serializer.save()
 
+            # Get the list of book IDs from the request data
+            book_ids = request.data.get('author', [])
+
+            if book_ids:
+                # Retrieve the existing Book instances based on the list of book IDs
+                books = Book.objects.filter(pk__in=book_ids)
+
+                # Link the Author with the retrieved Book instances using the add() method
+                author.books.add(*books)
+
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 
 
 class AuthorListCreateView(generics.ListCreateAPIView):
