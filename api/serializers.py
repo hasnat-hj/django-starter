@@ -10,6 +10,7 @@ class AuthorSerializer(serializers.ModelSerializer):
         model = Author
         fields = '__all__'  # You can also specify the fields explicitly instead of '__all__'
 class BookSerializer(serializers.ModelSerializer):
+    author = AuthorSerializer(many=True,read_only=True)  # Include related authors
     class Meta:
         model = Book
         depth = 1

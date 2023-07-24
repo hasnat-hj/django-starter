@@ -96,7 +96,17 @@ class BookRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
 class BookListCreateView(generics.ListCreateAPIView):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
-
+    def post(self, request):
+            serializer = BookSerializer(data=request.data)
+            if serializer.is_valid():
+                book = serializer.save()  # Save the book instance first
+                print(book)
+                # Associate authors with the book using many-to-many relationship
+                if 'author' in request.data:
+                    author_ids = request.data['author']
+                    book.author.set(author_ids)  # Set the many-to-many relationship
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class AuthorRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Author.objects.all()
